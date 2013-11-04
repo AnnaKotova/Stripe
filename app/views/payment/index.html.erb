@@ -1,0 +1,98 @@
+
+<h1>Payment#index</h1>
+<%= @token %>
+       
+<body>
+<div class="container">
+      
+    <h1>Charge $10 with Stripe</h1>
+
+    <p></p>
+
+    <!-- to display errors returned by createToken -->
+    <span class="payment-errors"></span>
+
+    <div class="well">
+        <form action="payment/pay" class="form-horizontal" method="POST" id="payment-form">
+            <legend>Ниже указан номер одной моей тестовой карты. Кто не хочет вбивать свою, может ее использовать.
+            </legend>
+                  <label class="control-label" for="card-number">Card Number</label>
+
+                <div class="controls">
+                    <input type="text" size="20" autocomplete="off" class="card-number" id="card-number"
+                           value="4627100301689827"/>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="card-cvc">CVC</label>
+
+                <div class="controls">
+                    <input type="text" size="4" autocomplete="off" class="card-cvc" id="card-cvc" value="240"/>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Expiration (MM/YYYY)</label>
+
+                <div class="controls">
+                    <input type="text" size="2" class="span1" id="card-expiry-month" value="1"/>
+                    <span> / </span>
+                    <input type="text" size="4" class="span1" id="card-expiry-year" value="2013"/>
+                </div>
+            </div>
+            <div class="control-group">
+                <div class="controls">
+                    <button type="submit" class="btn btn-primary" >Submit Payment</button>
+                </div>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+
+<script>
+<% require 'stripe' %>
+       Stripe.setPublishableKey('pk_test_seigACkJC0uwgFZbQ6ii0zrm');
+
+        function stripeResponseHandler(status, response) {
+            if (response.error) {
+                //show the errors on the form
+                $(".payment-errors").html(response.error.message);
+            } else {
+                var form$ = $("#payment-form");
+                // token contains id, last4, and card type
+                var token = response['id'];
+                // insert the token into the form so it gets submitted to the server
+                form$.append("<input type='hidden' name='stripeToken' value='" + token + "'/>");
+                // and submit
+                form$.get(0).submit();
+            }
+        }
+
+        $(document).ready(function () {
+            alert("ok");
+            $("#payment-form").submit(function (event) {
+            	
+                // disable the submit button to prevent repeated clicks
+                $('.btn').attr("disabled", "disabled");
+
+                Stripe.createToken({
+                    number:$('#card-number').val(),
+                    cvc:$('#card-cvc').val(),
+                    exp_month:$('#card-expiry-month').val(),
+                    exp_year:$('#card-expiry-year').val()
+                }, stripeResponseHandler);
+
+                // prevent the form from submitting with the default action
+                return false;
+            });
+        });
+
+        /*if (window.location.protocol === 'file:') {
+            alert("stripe.js does not work when included in pages served over file:// URLs. Try serving this page over a webserver. Contact support@stripe.com if you need assistance.");
+        }
+
+        $(".submitpay-button").click(function () {
+            "payment10-form"
+        });*/
+</script>
